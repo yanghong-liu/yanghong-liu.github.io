@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>V2AP · Yanghong Liu</title>
+<meta name="description" content="V2AP learns robot-executable grasp affordances from human video priors through physics-verified posterior supervision. RSS 2026 RoboData Workshop.">
+<link rel="canonical" href="https://yanghong-liu.github.io/v2ap.html">
+<link rel="stylesheet" href="home.css"><link rel="stylesheet" href="v2ap.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="wrap header"><a class="wordmark" href="index.html" aria-label="Yanghong Liu, home">YL<span>.</span></a><nav aria-label="Project navigation"><a href="#overview">Overview</a><a href="#method">Method</a><a href="#results">Results</a><a href="#contribution">My role</a></nav></header>
+<main id="main" class="wrap">
+<section class="paper-header" aria-labelledby="paper-title">
+<p class="eyebrow">RSS 2026 ROBODATA WORKSHOP</p><h1 id="paper-title">V2AP</h1><p class="paper-title">Learning Affordance Posteriors for Robotic Grasping from Human Video Priors</p>
+<p class="authors"><strong>Yanghong Liu</strong>, Fan Xu, Zehao Lin, Jiakai Chen, Haoran Lu,<br class="desktop-break"> Zhengtao Yao, Yubiao Zhang, Masayoshi Tomizuka, Wei Zhan, Ruihai Wu</p>
+<p class="lab">UC Berkeley — Tomizuka MSC Lab</p>
+<p class="lede">Turning human video contact priors into physically verified supervision for robot grasping.</p>
+<div class="links"><a class="pdf-button" href="assets/V2AP-RSS-2026-RoboData-Workshop.pdf" target="_blank" rel="noopener">Workshop PDF ↗</a><a href="#results">Results ↓</a><a href="index.html#work">Back to homepage ↗</a></div>
+</section>
+<section id="overview" aria-labelledby="overview-title"><h2 id="overview-title">Overview</h2>
+<figure class="paper-figure"><a class="figure-link" data-zoom href="assets/v2ap/pipeline.png" aria-label="Enlarge V2AP pipeline figure"><img src="assets/v2ap/pipeline.png" width="1750" height="792" alt="V2AP pipeline: egocentric and third-person videos, hand and object reconstruction, human priors, robot verification, posterior-supervised training, and real-robot deployment."></a><figcaption>Figure 2 · From human video priors to robot-executable supervision. <span>Click any figure to enlarge.</span></figcaption></figure>
+<p>V2AP reconstructs hand–object interactions from egocentric and third-person videos, extracts human contact priors, and verifies candidate grasps in simulation. Successful grasps form <strong>Robot Posteriors</strong> that supervise affordance learning and guide grasp-pose generation.</p>
+</section>
+<section id="method" aria-labelledby="method-title"><h2 id="method-title">Method</h2>
+<div class="method-grid">
+<article><p class="step">01 / RECONSTRUCT</p><h3>Human Contact Priors</h3><p>Reconstruct hands and objects from egocentric and third-person videos, then align them in a shared coordinate frame. Aggregate contact evidence on the object surface and smooth it into a continuous map of human-preferred contact regions.</p></article>
+<article><p class="step">02 / VERIFY</p><h3>Physics-Verified Robot Posteriors</h3><p>Sample grasps in human-prior regions. Use <strong>cuRobo</strong> to check reachability and collision-free motion, then <strong>Isaac Sim</strong> to verify stable grasping and lifting. Contacts from successful grasps form posterior supervision.</p></article>
+<article><p class="step">03 / LEARN</p><h3>Posterior-Supervised Affordance Learning</h3><p>Train a <strong>PointNet++</strong> network with the simulation-generated posterior maps. Given an object point cloud, the model predicts a dense map of robot-executable grasp affordances using point-wise L1 supervision.</p></article>
+<article><p class="step">04 / GENERATE</p><h3>Affordance-Conditioned Grasp Generation</h3><p>A <strong>conditional diffusion model</strong> uses the point cloud and predicted affordance map to generate 6-DoF grasp poses. Geometric, inverse-kinematics, and collision checks select a feasible grasp for execution.</p></article>
+</div>
+<figure class="paper-figure supporting-figure"><a class="figure-link" data-zoom href="assets/v2ap/prior-posterior.png" aria-label="Enlarge human prior and robot posterior comparison"><img src="assets/v2ap/prior-posterior.png" width="1062" height="500" loading="lazy" alt="Six paired examples compare human-prior-guided and robot-posterior-guided simulated grasps, alongside their contact maps."></a><figcaption>Figure 4 · Human contact preferences can lead to robot-infeasible grasps. Robot Posteriors ground those preferences in physically verified contact regions.</figcaption></figure>
+</section>
+<section id="results" aria-labelledby="results-title"><h2 id="results-title">Simulation Results</h2>
+<div class="result-lead"><p class="metric">31.9% <span>→</span> 61.6%</p><div><strong>+29.7 percentage points</strong><p>Grasp success with posterior supervision <br>versus human-prior supervision.</p></div></div>
+<p>Human video priors come from <strong>OakInk, DexYCB, and EgoDex</strong>. We evaluate grasp success in Isaac Sim on unseen object instances within seen categories and on objects from unseen categories.</p>
+<div class="table-scroll" tabindex="0" role="region" aria-label="Main grasp success results"><table><caption>Grasp success rate (%)</caption><thead><tr><th scope="col">Evaluation split</th><th scope="col">Human-prior supervision</th><th scope="col">V2AP</th></tr></thead><tbody><tr><th scope="row">Unseen objects in seen categories</th><td>35.2</td><td class="best">63.1</td></tr><tr><th scope="row">Unseen categories</th><td>22.1</td><td class="best">57.0</td></tr><tr class="total"><th scope="row">All test trials combined</th><td>31.9</td><td class="best">61.6</td></tr></tbody></table></div>
+<p class="note">Values from Table I of the Workshop paper. The overall rate aggregates all test trials; it is not the arithmetic mean of the two split-level rates. Human-prior supervision corresponds to “Ours w/o P” in the paper.</p>
+<details class="baseline-details"><summary>Full baseline comparison</summary><div class="table-scroll" tabindex="0" role="region" aria-label="Full baseline grasp success results"><table><caption>Table I · Simulation grasp success rate (%)</caption><thead><tr><th scope="col">Evaluation split</th><th scope="col">V2AP</th><th scope="col">Ours w/o P</th><th scope="col">GraspNet</th><th scope="col">DP3</th><th scope="col">GraspVLA</th></tr></thead><tbody><tr><th scope="row">Unseen objects</th><td class="best">63.1</td><td>35.2</td><td>34.5</td><td>25.1</td><td>9.2</td></tr><tr><th scope="row">Unseen categories</th><td class="best">57.0</td><td>22.1</td><td>31.0</td><td>13.1</td><td>4.1</td></tr><tr class="total"><th scope="row">All test trials combined</th><td class="best">61.6</td><td>31.9</td><td>33.6</td><td>24.2</td><td>7.9</td></tr></tbody></table></div><p class="note">Comparison under the paper’s evaluation setting. “Ours w/o P” trains the affordance predictor on Human Priors instead of Robot Posteriors.</p></details>
+</section>
+<section id="affordances" aria-labelledby="affordance-title"><h2 id="affordance-title">Learned Affordances</h2><p>The model predicts grasp affordances directly from object geometry. These examples show point clouds and predicted maps across six object categories.</p>
+<figure class="paper-figure supporting-figure"><a class="figure-link" data-zoom href="assets/v2ap/affordances.png" aria-label="Enlarge predicted affordance maps"><img src="assets/v2ap/affordances.png" width="1062" height="512" loading="lazy" alt="Raw point clouds and predicted affordance heatmaps for spray bottle, dispenser, toothpaste, bottle, mug, and hammer shapes. Warmer colors indicate higher predicted affordance."></a><figcaption>Figure 3 · Predicted Robot Posterior affordance maps. Warmer colors indicate higher predicted grasp affordance.</figcaption></figure>
+</section>
+<section id="real-world" aria-labelledby="real-world-title"><h2 id="real-world-title">Real-World Examples</h2><p>Qualitative real-world examples on a <strong>Dexmate robot with a Sharpa two-finger hand</strong>, using a single RGB-D observation to predict affordances and generate grasps.</p>
+<figure class="paper-figure"><a class="figure-link" data-zoom href="assets/v2ap/real-world.png" aria-label="Enlarge real-world grasping examples"><img src="assets/v2ap/real-world.png" width="1071" height="375" loading="lazy" alt="Six real-world grasping examples, each paired with its predicted object affordance map."></a><figcaption>Figure 5 · Six objects illustrating real-world transfer. These qualitative examples are separate from the simulation success rates above.</figcaption></figure>
+</section>
+<section id="contribution" class="contribution" aria-labelledby="contribution-title"><h2 id="contribution-title">My Contribution</h2><p>I led the <strong>video-to-3D reconstruction pipeline</strong> and <strong>posterior-supervised affordance-model training</strong>.</p><p class="note">First author · Research Intern, UC Berkeley — Tomizuka MSC Lab. The complete framework, experiments, and figures are collaborative work by the paper’s authors.</p></section>
+<section id="scope" aria-labelledby="scope-title"><h2 id="scope-title">Scope &amp; Resources</h2><p>The current framework focuses on single-object grasping. Extending posterior construction to bimanual, multi-object, and long-horizon manipulation will require handling more complex occlusion, contact dynamics, and coordination.</p><div class="links resource-links"><a href="assets/V2AP-RSS-2026-RoboData-Workshop.pdf" target="_blank" rel="noopener">Read the Workshop PDF ↗</a><a href="index.html#work">← Back to selected research</a></div></section>
+</main>
+<footer class="wrap"><a href="index.html">Yanghong Liu</a><span>V2AP · RSS 2026 RoboData Workshop</span></footer>
+<dialog id="figure-dialog" aria-label="Enlarged paper figure"><div class="dialog-toolbar"><a id="original-figure" target="_blank" rel="noopener">Open full-size image ↗</a><button type="button" id="close-figure" aria-label="Close enlarged figure">Close ×</button></div><img id="enlarged-figure" alt=""><p id="figure-caption"></p></dialog>
+<script src="v2ap.js"></script>
+</body></html>
